@@ -1,0 +1,41 @@
+
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: portfolio
+      POSTGRES_PASSWORD: portfolio
+      POSTGRES_DB: portfolio
+    ports:
+      - "127.0.0.1:55432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./sql/01_init.sql:/docker-entrypoint-initdb.d/01_init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U portfolio -d portfolio"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  airflow:
+    image: ecommerce-airflow:latest
+    command: standalone
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+      AIRFLOW__CORE__DAGS_FOLDER: /opt/airflow/project/airflow/dags
+      DB_DSN: postgresql://portfolio:portfolio@postgres:5432/portfolio
+      PGHOST: postgres
+      PGPORT: "5432"
+      PGUSER: portfolio
+      PGPASSWORD: portfolio
+      PGDATABASE: portfolio
+    ports:
+      - "127.0.0.1:8080:8080"
+    volumes:
+      - ./:/opt/airflow/project
+
+volumes:
+  pgdata:

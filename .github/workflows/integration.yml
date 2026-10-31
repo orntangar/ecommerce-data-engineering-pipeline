@@ -1,0 +1,60 @@
+name: integration
+on:
+  push:
+  pull_request:
+jobs:
+  postgres-dbt:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: portfolio
+          POSTGRES_PASSWORD: portfolio
+          POSTGRES_DB: portfolio
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U portfolio -d portfolio"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DB_DSN: postgresql://portfolio:portfolio@localhost:5432/portfolio
+      PGHOST: localhost
+      PGPORT: 5432
+      PGUSER: portfolio
+      PGPASSWORD: portfolio
+      PGDATABASE: portfolio
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
+      - name: Create raw tables
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import os, psycopg
+          with psycopg.connect(os.environ["DB_DSN"]) as conn:
+              conn.execute(Path("sql/01_init.sql").read_text())
+          PY
+      - name: Batch 1 + dbt models and tests
+        run: |
+          python scripts/ingest.py --file data/orders_batch_001.jsonl --batch-id demo_001
+          dbt build --project-dir dbt --profiles-dir dbt --vars '{"batch_id":"demo_001"}'
+          python scripts/mark_processed.py --batch-id demo_001
+      - name: Batch 2 + dbt models and tests
+        run: |
+          python scripts/ingest.py --file data/orders_batch_002.jsonl --batch-id demo_002
+          dbt build --project-dir dbt --profiles-dir dbt --vars '{"batch_id":"demo_002"}'
+          python scripts/mark_processed.py --batch-id demo_002
+          python scripts/check_demo.py
+      - name: Replay must be idempotent
+        run: |
+          python scripts/ingest.py --file data/orders_batch_002.jsonl --batch-id demo_002
+          dbt build --project-dir dbt --profiles-dir dbt --vars '{"batch_id":"demo_002"}'
+          python scripts/mark_processed.py --batch-id demo_002
+          python scripts/check_demo.py

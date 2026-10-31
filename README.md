@@ -1,0 +1,163 @@
+# E-commerce Data Engineering Pipeline
+
+**Portfolio SQL / Data Engineering** — PostgreSQL · dbt · Apache Airflow · Python · GitHub Actions.
+
+**État du projet : validé en environnement local**
+
+Ce projet implémente un pipeline ELT de données e-commerce avec **PostgreSQL, Python, dbt et Apache Airflow**.
+
+Le pipeline a été exécuté et testé avec succès sur Windows 11 et Docker Desktop.
+
+**Résultats obtenus :**
+- 3 lots de données traités.
+- 8 événements ingérés.
+- 5 commandes enregistrées, dont 4 actives.
+- 300 € de chiffre d'affaires calculé.
+- 27 opérations dbt réussies lors des validations.
+- 2 exécutions Airflow réussies.
+- Tests d'intégration et d'idempotence validés.
+
+Le projet constitue une démonstration technique locale et n'est pas encore destiné à un déploiement en production.
+
+## Objectif
+
+Construire un pipeline ELT qui traite des événements de commandes, supporte les mises à jour et les arrivées tardives, teste la qualité des données et reste cohérent après un rejeu.
+
+Architecture détaillée : [docs/architecture.md](docs/architecture.md). Procédures de reprise : [docs/runbook.md](docs/runbook.md).
+
+```mermaid
+flowchart LR
+  A[JSONL] --> B[Ingestion Python]
+  B --> C[(PostgreSQL)]
+  C --> D[dbt staging]
+  D --> E[dbt MERGE incrémental]
+  E --> F[(Data Mart)]
+  G[Airflow] --> B
+  G --> E
+  G --> H[Contrôle + validation]
+```
+
+## Installation en local
+
+Pré-requis : Docker Compose et Python 3.11+.
+
+Les identifiants fournis sont **exclusivement réservés au développement local**.
+
+```bash
+docker compose up -d
+py -3.12 -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+Copy-Item .env.example .env
+$env:DB_DSN = "postgresql://portfolio:portfolio@localhost:55432/portfolio"
+```
+
+Sous Windows, adapter l'activation du virtualenv et les variables d'environnement à son terminal.
+
+## Exécuter le pipeline sans Airflow
+
+### Batch 1 — trois commandes
+
+```bash
+python scripts/ingest.py --file data/orders_batch_001.jsonl --batch-id demo_001
+dbt build --project-dir dbt --profiles-dir dbt --vars '{"batch_id":"demo_001"}'
+python scripts/mark_processed.py --batch-id demo_001
+```
+
+### Batch 2 — modification, suppression logique et événement tardif
+
+```bash
+python scripts/ingest.py --file data/orders_batch_002.jsonl --batch-id demo_002
+dbt build --project-dir dbt --profiles-dir dbt --vars '{"batch_id":"demo_002"}'
+python scripts/mark_processed.py --batch-id demo_002
+python scripts/check_demo.py
+python scripts/report.py
+```
+
+Résultats attendus : **7 événements bruts**, **4 commandes**, **3 commandes actives** et **255,00 €** de revenus sur les états courants.
+
+### Tester la reprise et l'idempotence
+
+Rejouer les **mêmes** commandes du batch `demo_002` une seconde fois, puis relancer `python scripts/check_demo.py`. Les données finales et le montant ne doivent pas changer.
+
+Pour reconstruire intégralement la table des commandes :
+
+```bash
+dbt build --full-refresh --project-dir dbt --profiles-dir dbt --vars '{"batch_id":"demo_002"}'
+```
+
+### Exemples de requêtes à montrer en entretien
+
+```sql
+SELECT order_id, latest_event_id, amount_eur, is_deleted
+FROM analytics.fct_orders ORDER BY order_id;
+
+SELECT order_date, order_count, revenue_eur
+FROM analytics.mart_daily_revenue ORDER BY order_date;
+
+SELECT batch_id, status, processed_at
+FROM public.ingest_batches ORDER BY created_at;
+```
+
+## Exécution avec Airflow
+
+Le DAG d'exemple est dans [`airflow/dags/ecommerce_elt.py`](airflow/dags/ecommerce_elt.py).
+
+Il déclenche en série : **ingestion → dbt build + tests → validation du batch**.
+
+Airflow n'est pas installé dans `requirements.txt` afin de garder l'environnement local léger. Installer séparément une version compatible d'Airflow avec les *constraints* de sa version Python, conformément à sa documentation officielle, puis installer les dépendances de ce dépôt dans l'environnement du worker.
+
+Le worker doit voir le dépôt, disposer de la commande `dbt`, de `DB_DSN` et des variables `PG*`, ainsi que d'un accès à PostgreSQL.
+
+Déclencher le DAG `ecommerce_elt` successivement avec :
+
+```json
+{"batch_id":"demo_001","file_name":"orders_batch_001.jsonl"}
+```
+
+puis :
+
+```json
+{"batch_id":"demo_002","file_name":"orders_batch_002.jsonl"}
+```
+
+Le DAG est pensé pour Airflow 2.x. **Exécution d'Apache Airflow avec Docker
+
+Le projet intègre Apache Airflow 2.10.5 via Docker Compose. Une image personnalisée est définie dans airflow/Dockerfile et contient les dépendances nécessaires à l'exécution des transformations dbt.
+
+Le pipeline ecommerce_elt a été exécuté avec succès en environnement local. Il automatise l'ingestion Python, les transformations et tests dbt, puis la validation des lots de données.
+
+Cette configuration est destinée au développement et à la démonstration, et non à un environnement de production.** 
+
+## Contrôles de qualité
+
+- `event_id` et `order_id` non nuls ; événements uniques.
+- Une seule ligne par `order_id` dans `analytics.fct_orders`.
+- Clés de dimensions valides.
+- Cohérence entre derniers événements admissibles et table de faits.
+- Cohérence des agrégats de chiffre d'affaires.
+- Un script d'assertions end-to-end et une CI GitHub Actions.
+
+## Scénarios d'entretien à présenter
+
+1. **Rejeu** : pourquoi relancer le batch ne crée pas de doublons.
+2. **Événement tardif** : pourquoi `e-007` ne remplace pas `e-004`.
+3. **Suppression** : pourquoi une commande reste dans les faits mais sort du revenu.
+4. **Panne de transformation** : pourquoi un batch non validé peut être rejoué.
+5. **Limites** : ce qu'il faut ajouter pour passer au multi-worker et à des volumes élevés.
+
+## Publication sur GitHub
+
+Après validation locale, ouvrir un terminal dans le dossier du dépôt :
+
+```bash
+git init
+git add .
+git commit -m "Initial data engineering portfolio"
+```
+
+Créer ensuite un dépôt GitHub vide avec le nom `ecommerce-data-engineering-pipeline`, lui associer l'URL distante et faire le premier `git push`.
+
+**Nom de portfolio recommandé :** *Reliable Incremental ELT — PostgreSQL, dbt & Airflow*.
+
+Ajoute au README final des captures d'Airflow, de l'exécution dbt, du résultat SQL et de GitHub Actions en vert **uniquement après avoir obtenu ces résultats**.
