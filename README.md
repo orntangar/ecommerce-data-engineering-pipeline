@@ -29,14 +29,17 @@ Architecture détaillée : [docs/architecture.md](docs/architecture.md). Procéd
 
 ```mermaid
 flowchart LR
-  A[JSONL] --> B[Ingestion Python]
-  B --> C[(PostgreSQL)]
-  C --> D[dbt staging]
-  D --> E[dbt MERGE incrémental]
-  E --> F[(Data Mart)]
-  G[Airflow] --> B
-  G --> E
-  G --> H[Contrôle + validation]
+    A[JSONL] --> B[Ingestion Python]
+    B --> C[(PostgreSQL)]
+    C --> D[dbt staging]
+    D --> E[dbt MERGE incrémental]
+    E --> F[(Data Mart)]
+    F --> T[Tests dbt]
+    T --> H[Validation du lot]
+
+    G[Airflow] -.-> B
+    G -.-> E
+    G -.-> H
 ```
 
 ## Installation en local
