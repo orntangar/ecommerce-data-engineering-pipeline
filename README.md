@@ -1,3 +1,5 @@
+[![integration](https://github.com/orntangar/ecommerce-data-engineering-pipeline/actions/workflows/integration.yml/badge.svg?branch=main)](https://github.com/orntangar/ecommerce-data-engineering-pipeline/actions/workflows/integration.yml)
+
 # E-commerce Data Engineering Pipeline
 
 **Portfolio SQL / Data Engineering** — PostgreSQL · dbt · Apache Airflow · Python · GitHub Actions.
