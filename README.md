@@ -72,11 +72,27 @@ python scripts/mark_processed.py --batch-id demo_001
 python scripts/ingest.py --file data/orders_batch_002.jsonl --batch-id demo_002
 dbt build --project-dir dbt --profiles-dir dbt --vars '{"batch_id":"demo_002"}'
 python scripts/mark_processed.py --batch-id demo_002
-python scripts/check_demo.py
 python scripts/report.py
 ```
 
-Résultats attendus : **7 événements bruts**, **4 commandes**, **3 commandes actives** et **255,00 €** de revenus sur les états courants.
+
+### Batch 3 — nouvelle commande et validation finale
+
+Ce troisième lot ajoute une commande de 45 € et permet de vérifier le bon fonctionnement du chargement incrémental.
+
+Exécuter les commandes suivantes dans PowerShell :
+
+```powershell
+python scripts/ingest.py --file data/orders_batch_003.jsonl --batch-id demo_003
+dbt build --project-dir dbt --profiles-dir dbt --vars "batch_id: demo_003"
+python scripts/mark_processed.py --batch-id demo_003
+python scripts/check_demo.py
+```
+
+Le script de validation vérifie les résultats après traitement des trois lots.
+
+
+Résultats attendus après traitement des trois lots : 8 événements bruts, 5 commandes, 4 commandes actives et 300,00 € de chiffre d'affaires.
 
 ### Tester la reprise et l'idempotence
 
@@ -107,7 +123,9 @@ Le DAG d'exemple est dans [`airflow/dags/ecommerce_elt.py`](airflow/dags/ecommer
 
 Il déclenche en série : **ingestion → dbt build + tests → validation du batch**.
 
-Airflow n'est pas installé dans `requirements.txt` afin de garder l'environnement local léger. Installer séparément une version compatible d'Airflow avec les *constraints* de sa version Python, conformément à sa documentation officielle, puis installer les dépendances de ce dépôt dans l'environnement du worker.
+Airflow n'est pas installé dans `requirements.txt` afin de garder l'environnement local léger. Apache Airflow 2.10.5 est exécuté dans un conteneur Docker. Son environnement est défini dans airflow/Dockerfile et le service airflow est configuré dans docker-compose.yml.
+
+Cette configuration permet d'exécuter localement le DAG ecommerce_elt avec PostgreSQL et dbt, sans installer Airflow directement sur Windows.
 
 Le worker doit voir le dépôt, disposer de la commande `dbt`, de `DB_DSN` et des variables `PG*`, ainsi que d'un accès à PostgreSQL.
 
@@ -122,6 +140,9 @@ puis :
 ```json
 {"batch_id":"demo_002","file_name":"orders_batch_002.jsonl"}
 ```
+
+{"batch_id":"demo_003","file_name":"orders_batch_003.jsonl"}
+
 
 Le DAG est pensé pour Airflow 2.x. **Exécution d'Apache Airflow avec Docker
 
