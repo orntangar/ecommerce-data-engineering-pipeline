@@ -39,7 +39,7 @@ La suppression est **logique** : `is_deleted = TRUE` reste dans `fct_orders` et 
 - Projet local à exécuteur unique : des jobs concurrents hors DAG ne sont pas pris en charge.
 - Pas de prise en charge des très gros volumes, d'un registre de schémas, ni de CDC distribué.
 - Les dimensions clients et produits sont simples ; il ne s'agit pas d'un modèle SCD Type 2.
-- Pas de déploiement Airflow en conteneur prêt à l'emploi, ni de coffre à secrets.
+- Airflow s'exécute localement dans Docker avec une image personnalisée ; il ne s'agit pas d'un déploiement de production et aucun coffre à secrets n'est configuré.
 - Les identifiants dans `docker-compose.yml` sont réservés au développement local.
 
 ## Captures utiles dans le README final
@@ -47,5 +47,5 @@ La suppression est **logique** : `is_deleted = TRUE` reste dans `fct_orders` et 
 1. Graph Airflow (3 tâches vertes).
 2. Logs `dbt build` avec tests réussis.
 3. Requête SQL sur `analytics.fct_orders`, dont une ligne supprimée.
-4. Résultat `analytics.mart_daily_revenue` : total 255,00 €.
+4. Résultat `analytics.mart_daily_revenue` : total 300,00 €.
 5. Workflow GitHub Actions réussi.
