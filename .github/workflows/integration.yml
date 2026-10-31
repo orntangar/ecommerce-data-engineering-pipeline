@@ -51,7 +51,14 @@ jobs:
           python scripts/ingest.py --file data/orders_batch_002.jsonl --batch-id demo_002
           dbt build --project-dir dbt --profiles-dir dbt --vars '{"batch_id":"demo_002"}'
           python scripts/mark_processed.py --batch-id demo_002
+        
+      - name: Batch 3 + dbt models and tests
+        run: |
+          python scripts/ingest.py --file data/orders_batch_003.jsonl --batch-id demo_003
+          dbt build --project-dir dbt --profiles-dir dbt --vars '{"batch_id":"demo_003"}'
+          python scripts/mark_processed.py --batch-id demo_003
           python scripts/check_demo.py
+
       - name: Replay must be idempotent
         run: |
           python scripts/ingest.py --file data/orders_batch_002.jsonl --batch-id demo_002
