@@ -174,19 +174,13 @@ Cette configuration est destinée au développement et à la démonstration, et 
 4. **Panne de transformation** : pourquoi un batch non validé peut être rejoué.
 5. **Limites** : ce qu'il faut ajouter pour passer au multi-worker et à des volumes élevés.
 
-## Publication sur GitHub
+## Compétences démontrées
 
-Après validation locale, ouvrir un terminal dans le dossier du dépôt :
-
-```bash
-git init
-git add .
-git commit -m "Initial data engineering portfolio"
-```
-
-Créer ensuite un dépôt GitHub vide avec le nom `ecommerce-data-engineering-pipeline`, lui associer l'URL distante et faire le premier `git push`.
-
-**Nom de portfolio recommandé :** *Reliable Incremental ELT — PostgreSQL, dbt & Airflow*.
+- **Python et PostgreSQL** : ingestion transactionnelle et idempotence des lots.
+- **SQL et dbt** : transformations incrémentales, gestion des événements tardifs et suppressions logiques.
+- **Apache Airflow** : orchestration de l'ingestion, des transformations et de la validation.
+- **Qualité des données** : tests dbt et validations automatisées.
+- **GitHub Actions** : intégration continue et tests d'idempotence.
 
 ## Preuves d'exécution
 
