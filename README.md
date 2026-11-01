@@ -193,3 +193,7 @@ Créer ensuite un dépôt GitHub vide avec le nom `ecommerce-data-engineering-pi
 ### GitHub Actions - intégration continue réussie
 
 ![Exécution GitHub Actions réussie](docs/screenshots/github_actions_success.png)
+
+### Apache Airflow - DAG `ecommerce_elt`
+
+![Graphique Airflow - trois tâches réussies](docs/screenshots/airflow_graph_success.png)
