@@ -6,7 +6,7 @@
 
 **État du projet : validé en environnement local**
 
-Ce projet implémente un pipeline ELT de données e-commerce avec **PostgreSQL, Python, dbt et Apache Airflow**.
+Ce projet démontre un pipeline ELT **rejouable et testé** : ingestion d'événements de commandes, gestion des arrivées tardives et des suppressions logiques, puis calcul du chiffre d'affaires dans un Data Mart avec **Python, PostgreSQL, dbt et Apache Airflow**.
 
 Le pipeline a été exécuté et testé avec succès sur Windows 11 et Docker Desktop.
 
