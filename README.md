@@ -147,13 +147,15 @@ puis :
 {"batch_id":"demo_003","file_name":"orders_batch_003.jsonl"}
 
 
-Le DAG est pensé pour Airflow 2.x. **Exécution d'Apache Airflow avec Docker
+Le DAG est pensé pour Airflow 2.x.
+
+## Exécution d'Apache Airflow avec Docker
 
 Le projet intègre Apache Airflow 2.10.5 via Docker Compose. Une image personnalisée est définie dans airflow/Dockerfile et contient les dépendances nécessaires à l'exécution des transformations dbt.
 
 Le pipeline ecommerce_elt a été exécuté avec succès en environnement local. Il automatise l'ingestion Python, les transformations et tests dbt, puis la validation des lots de données.
 
-Cette configuration est destinée au développement et à la démonstration, et non à un environnement de production.** 
+Cette configuration est destinée au développement et à la démonstration, et non à un environnement de production. 
 
 ## Contrôles de qualité
 
@@ -186,4 +188,8 @@ Créer ensuite un dépôt GitHub vide avec le nom `ecommerce-data-engineering-pi
 
 **Nom de portfolio recommandé :** *Reliable Incremental ELT — PostgreSQL, dbt & Airflow*.
 
-Ajoute au README final des captures d'Airflow, de l'exécution dbt, du résultat SQL et de GitHub Actions en vert **uniquement après avoir obtenu ces résultats**.
+## Preuves d'exécution
+
+### GitHub Actions - intégration continue réussie
+
+![Exécution GitHub Actions réussie](docs/screenshots/github_actions_success.png)
