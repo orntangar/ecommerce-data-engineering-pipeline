@@ -197,3 +197,8 @@ Créer ensuite un dépôt GitHub vide avec le nom `ecommerce-data-engineering-pi
 ### Apache Airflow - DAG `ecommerce_elt`
 
 ![Graphique Airflow - trois tâches réussies](docs/screenshots/airflow_graph_success.png)
+
+### dbt - transformations et tests réussis
+
+![Exécution dbt : 27 opérations réussies, dont 22 tests](docs/screenshots/dbt_build_success.png)
+
