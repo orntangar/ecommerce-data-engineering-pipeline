@@ -202,3 +202,7 @@ Créer ensuite un dépôt GitHub vide avec le nom `ecommerce-data-engineering-pi
 
 ![Exécution dbt : 27 opérations réussies, dont 22 tests](docs/screenshots/dbt_build_success.png)
 
+### PostgreSQL - chiffre d'affaires quotidien
+
+![Résultats SQL : 4 commandes actives et 300 euros de chiffre d'affaires](docs/screenshots/sql_daily_revenue_success.png)
+
